@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:TitleWindow xmlns:fx="http://ns.adobe.com/mxml/2009" 
+		 xmlns:s="library://ns.adobe.com/flex/spark" 
+		 xmlns:mx="library://ns.adobe.com/flex/mx" title="Remove AssignmentAssignment" width="498" backgroundColor="#54A2D9" height="236" title.reportingState="Remove Assignment" 
+		 backgroundColor.State1="#0F68A6" enabled.State1="true" close.State1="closeWindow();" backgroundColor.reportingState="#0F68A6" creationComplete="loadFields();" title.State1="Remove Assignment">
+
+	<s:states>
+		<s:State name="State1"/>
+		<s:State name="reportingState"/>
+	</s:states>
+	
+	<!--Script Block-->
+	<fx:Script>
+		<![CDATA[
+			import comps.assignmentDelete;
+			import comps.employeeAssign;
+			
+			import mx.collections.ArrayCollection;
+			import mx.collections.ArrayList;
+			import mx.containers.TitleWindow;
+			import mx.controls.Alert;
+			import mx.events.FlexEvent;
+			import mx.managers.PopUpManager;
+			import mx.rpc.events.FaultEvent;
+			import mx.rpc.events.ResultEvent;
+			
+			import spark.components.TitleWindow;
+					//Setter method sets employee assignment to report for employee perspective and report perspective
+					private function setAssignment():void {
+					//remote object instantiation 
+				
+					}
+			//close window function
+			private function closeWindow():void {
+				PopUpManager.removePopUp(this);
+			}
+			
+			//Set this variable as the Employee List Data Provider
+			[Bindable]
+			private var activeEmployeeListDP:ArrayCollection;
+			//Employee List handler. This function assigns the result event as the data provider for the employee drop down list. 
+			private function activeEmployeeListReturnHandler(event:ResultEvent):void{
+				
+				//Now Lets set the bindable variable above to this result event as the data provider for employee combobox. 
+				activeEmployeeListDP = event.result as ArrayCollection; 
+			}
+			
+			//load data on instantiation of component
+			private function loadFields():void{
+				cfSetAssignment.getAssignedEmployees2();
+			}
+			
+		   // Populate the reports list after selecting the employee
+			private function loadReports():void{
+				cfSetAssignment.getAssignedReports(empComboBox.selectedItem.employeeName)
+			}
+			
+		//Populate the reports list with the result event from the above function
+			private function populateReportsDropDownResult(event:ResultEvent):void{
+			
+				reportComboBox.dataProvider = event.result as ArrayCollection;
+			}
+			
+		//Delete The selected assignment
+			private function terminateAssignment():void{
+				cfSetAssignment.deleteEmployeeAssignment(empComboBox.selectedItem.employeeName, reportComboBox.selectedItem.reportName)
+				loadFields();
+		
+				
+			}
+		]]>
+	</fx:Script>
+	<fx:Declarations>
+		<s:RadioButtonGroup id="formPerspective"/>
+		<!-- Place non-visual elements (e.g., services, value objects) here -->
+		<s:RemoteObject id="cfSetAssignment" destination="ColdFusion" source="testingFolder.flexReport.cfc.assignReport" >
+			
+		<!-- Flex Method to Coldfusion Here-->
+		<mx:method name="getAssignedEmployees2" result="activeEmployeeListReturnHandler(event)"  fault="mx.controls.Alert.show(event.fault.faultString)" />
+		
+	    <!-- Method to retrieve reports assigned to empoyee -->
+		<mx:method name="getAssignedReports" result="populateReportsDropDownResult(event)" fault="mx.controls.Alert.show(event.fault.faultString)" />
+		<!-- Method to delete the selected assignment -->
+		<mx:method name="deleteEmployeeAssignment" result="mx.controls.Alert.show('Assignment was successfully ended')" fault="mx.controls.Alert.show(event.fault.faultString)" />
+	</s:RemoteObject>
+ 	</fx:Declarations>
+	<s:controlBarContent>
+	<s:Label id="footerLabel" text="Copyright  2015 First Title Services. All Rights Reserved.">
+	</s:Label>
+	</s:controlBarContent>
+	<s:HGroup x="0" y="0" width="100%" height="24">
+		<s:Label text="Select Perspective:" height="17" verticalAlign="bottom" fontWeight="bold" textDecoration="underline"/>
+		<s:RadioButton label="Employee Perspective" groupName="formPerspective" click="currentState=''" id="employeeRadio" selected="false" enabled="true" includeIn="reportingState"/>
+		<s:RadioButton includeIn="State1" label="Employee Perspective" enabled="true" click="currentState=''" selected="true"/>
+		<s:RadioButton includeIn="State1" label="Reporting Perspective" click="currentState='reportingState'" enabled="true"/>
+		<s:RadioButton label="Reporting Perspective" groupName="formPerspective" enabled="true" selected="true" click="currentState='reportingState'" id="reportingRadio" includeIn="reportingState"/>
+	</s:HGroup>
+	<s:Button label="Remove Assignment" x="10" bottom="15" id="btn_remove_assignment" click.State1="terminateAssignment();"/>
+	<s:Group x="0" y="49" width="100%" height="72" contentBackgroundColor="#BDBBBB" chromeColor="#333737">
+		<s:ComboBox x="15" y="32" id="empComboBox" x.reportingState="264" labelField.State1="employeeName" dataProvider.State1="{activeEmployeeListDP}" change.State1="loadReports();"/>
+		<s:ComboBox x="264" y="32" id="reportComboBox" x.reportingState="15" labelField.State1="reportName"/>
+		<s:Label x="15" y="12" text="Select Employee" fontWeight="bold" fontSize="12" text.reportingState="Select Employee" x.reportingState="264"/>
+		<s:Label x="264" y="12" text="Select Report" fontWeight="bold" fontSize="12" x.reportingState="15"/>
+	</s:Group>
+	<s:Label x="10" y="35" fontStyle="italic" fontWeight="bold" text="Revise Assignment (select employee and report to unassign.)" color="#F1E8E8" includeIn="reportingState"/>
+	<s:Label x="10" y="35" fontStyle="italic" fontWeight="bold" text="Revise Assignment (select employee and report to unassign.)" color="#F1E8E8" includeIn="State1"/>
+</s:TitleWindow>
