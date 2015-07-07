@@ -1,0 +1,275 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Application xmlns:fx="http://ns.adobe.com/mxml/2009" 
+			   xmlns:s="library://ns.adobe.com/flex/spark" 
+			   xmlns:mx="library://ns.adobe.com/flex/mx" minWidth="955" minHeight="600" width="1216" height="622" backgroundColor="#484242" creationComplete="populateComponents();" >
+	<fx:Script>
+		<![CDATA[
+			import comps.assignmentDelete;
+			import comps.employeeAssign;
+			import flash.utils.flash_proxy;
+			import mx.collections.ArrayCollection;
+			import mx.collections.ArrayList;
+			import mx.containers.TitleWindow;
+			import mx.controls.Alert;
+			import mx.core.mx_internal;
+			import mx.events.FlexEvent;
+			import mx.managers.PopUpManager;
+			import mx.rpc.events.ResultEvent;
+			import spark.components.TitleWindow;		   //  importing of the sparks version of TitleWindow components for use in later versions of flex applications. 
+			
+			
+			//function to call assignment creation window.
+			private function newAssignment():void{         
+			//call title window
+			var newWindow:employeeAssign =					//variable typed as the employeeAssign component.   
+			PopUpManager.createPopUp(this,employeeAssign, false) as employeeAssign;  //new instance of the employeeAssign component is called into the PopUpManager 
+			PopUpManager.centerPopUp(newWindow);           // sets the new instance of the employeeAssign component as centered in the application. 
+			}
+			
+			//getUserList ResultHandler
+			private function returnUserHandler(event:ResultEvent):void {
+				
+			}	
+			//returnReportHandler ResultHandler
+			private function returnReportsHandler(event:ResultEvent):void {
+				employeePerspectiveDG.dataProvider = event.result;
+				     
+			}
+			//Employee Perspective DataGrid data provider
+			public function getemployeePerspectiveDGProvider(event:ResultEvent):void {
+				
+				//getemployeeGridRO.getAssignmentByEmployee()
+			}
+			
+			
+			//function to call assignment creation window.
+			private function removeAssignmentWindowFunc():void{
+				//call assignment removal window
+				var newAssignmentRemovalWindow:assignmentDelete = PopUpManager.createPopUp(this, assignmentDelete, true) as assignmentDelete;
+				PopUpManager.centerPopUp(newAssignmentRemovalWindow);
+			}
+			
+			//function to call assignment creation window.
+			private function removeAssignmentWindowFunc2():void{
+				//call assignment removal window
+				var newAssignmentRemovalWindow:assignmentDelete = PopUpManager.createPopUp(this, assignmentDelete, true) as assignmentDelete;
+				PopUpManager.centerPopUp(newAssignmentRemovalWindow);
+			}
+			//Event Handler Return. This passes back the result of the CFC Function instantiated
+			private function returnHandler (e:ResultEvent):void
+			{
+				employeePerspectiveDG.dataProvider = e.result;
+				reportingPerspectiveDG.dataProvider = e.result;
+			}
+			//on load event instantiates the remote object call 
+			//to populate the datagrid components when the application loads in the browser. 
+			private function populateComponents():void {
+				testRO.getAssignmentByEmployee();
+				testRO.reportsList();
+				testRO.getEmployeeList();
+				testRO.getAssignedEmployees2();
+				testRO.getReportsCurrentlyAssigned();
+			}
+			
+			//Set this variable as the Reports List Data Provider
+			[Bindable]
+			private var reportsListDP:ArrayCollection;
+			//  Reports List handler. This function assigns the event result as the data provider for the Report Drop Down List
+			private function reportsReturnHandler(event:ResultEvent):void {
+			
+				//This variable stores the result of the query and serves as the data Provider for the reports combobox.
+				reportsListDP = event.result as ArrayCollection;
+			}
+			
+			//Set this variable as the Employee List Data Provider
+			[Bindable]
+			private var employeeListDP:ArrayCollection;
+			//Employee List handler. This function assigns the result event as the data provider for the employee drop down list. 
+			private function employeeListReturnHandler(event:ResultEvent):void{
+				
+				//Now Lets set the bindable variable above to this result event as the data provider for employee combobox. 
+				employeeListDP = event.result as ArrayCollection; 
+			}
+			
+			//On Report Selection, call the list of current employees assigned to selected reports.
+			private function displayAssignedEmployees():void{
+				testRO.getReportsAssignedToEmployees(selectedReportComboBox.selectedItem.reportName)
+			}
+			
+			//dataProvider for the reports Datagrid Tab
+			[Bindable]
+			private var assignedEmployeesDP:ArrayCollection;
+			
+			//Return the list of employees assigned to the selected report
+			private function displayAssignedEmployeeResult(event:ResultEvent):void{
+				
+				assignedEmployeesDP = event.result as ArrayCollection;
+			}
+			
+			//Report Creation Form Data Passing Function
+			//Passes the form back to the DB.
+			private function addNewReport():void{
+				testRO.addNewReport(fmReportName.text, fmReportCategory.text, fmReportDescrip.text)
+					clearForm();
+					populateComponents();
+					
+			}
+			
+			//FormReset Function
+			private function clearForm():void{
+				
+				fmReportName.text = ""
+				fmReportCategory.text = ""
+	  			fmReportDescrip.text = ""
+				fmReportDescrip.text = "" 
+			}
+			
+			//Set this variable as the Employee List Data Provider
+			[Bindable]
+			private var activeEmployeeListDP:ArrayCollection;
+			//Employee List handler. This function assigns the result event as the data provider for the employee drop down list. 
+			private function activeEmployeeListReturnHandler(event:ResultEvent):void{
+				
+				//Now Lets set the bindable variable above to this result event as the data provider for employee combobox. 
+				activeEmployeeListDP = event.result as ArrayCollection; 
+			}
+			//Get the reports assigned to the selected employee
+			private function populateEmployeePerspectiveDG():void{
+				testRO.getAssignedReports(employeeComboBox.selectedItem.employeeName)
+			}
+			//Populate the employee perspective DG with reports assigned to selected employee
+			private function populateEmployeeDGResult(event:ResultEvent):void{
+				employeePerspectiveDG2.dataProvider = event.result as ArrayCollection;
+			}
+			
+			//Variable for currently assign reports in report perspective
+			[Bindable]
+			private var reportsCurrentlyAssignedComboDP:ArrayCollection;
+			
+			//reports currently assigned function event handler and variable data provider assignment
+			private function reportsCurrentlyAssignedHandler(event:ResultEvent):void{
+				reportsCurrentlyAssignedComboDP = event.result as ArrayCollection;
+			}
+		]]>
+	</fx:Script>
+	
+	<fx:Declarations>
+		<s:RadioButtonGroup id="radiogroup1"/>
+		<mx:RemoteObject 
+			id="testRO" 
+			destination="ColdFusion" 
+			source="testingFolder.flexReport.cfc.assignReport"> 
+			
+			<!-- This method matches the identical method in the assignReport.cfc file -->
+			<mx:method name="getAssignmentByEmployee" result="returnHandler(event)" 
+					   fault="mx.controls.Alert.show(event.fault.faultString)"/> 
+		
+			<!-- This method matches the identical method in the assignReport.cfc file. Returns a list of reports from DB to Flex -->
+			<mx:method name="reportsList" result="reportsReturnHandler(event)" fault="mx.controls.Alert.show(event.fault.faultString)" />
+			
+			<!-- This method matches the identical method in the assignReport.cfc file. Returns a list of employees from DB to Flex -->
+			<mx:method name="getEmployeeList" result="employeeListReturnHandler(event)" fault="mx.controls.Alert.show(event.fault.faultString)" />
+		
+			<!-- This method retrieves the employees assigned to a selected report -->
+			<mx:method name="getReportsAssignedToEmployees" result="displayAssignedEmployeeResult(event)" fault="mx.controls.Alert.show(event.fault.faultString)" />
+			
+			<mx:method name="addNewReport" result="mx.controls.Alert.show('New Report Was Successfully Added!')" fault="mx.controls.Alert.show(event.fault.faultString)" />
+			
+			<!-- Get The Currently Assigned Employees -->
+			<mx:method name="getAssignedEmployees2" result="activeEmployeeListReturnHandler(event)"  fault="mx.controls.Alert.show(event.fault.faultString)" />
+			
+			<!-- Get the reports assigned to the selected employee -->
+			<mx:method name="getAssignedReports" result="populateEmployeeDGResult(event)" fault="mx.controls.Alert.show(event.fault.faultString)" />
+			
+			<!-- Get the list of reports currently assigned out -->
+			<mx:method name="getReportsCurrentlyAssigned" result="reportsCurrentlyAssignedHandler(event)" fault="mx.controls.Alert.show(event.fault.faultString)" />
+			
+		</mx:RemoteObject> 
+	</fx:Declarations>
+		
+		<!-- Place non-visual elements (e.g., services, value objects) here -->	
+	<mx:TabNavigator y="120" width="100%" height="443" x="0">
+	<s:NavigatorContent label="Employee Perspective" width="100%" height="100%" backgroundColor="#0F68A6" id="NavContentBox" >
+	<mx:MenuBar y="-8" chromeColor="#A39797" width="100%" height="34" x="0"></mx:MenuBar>
+	<mx:ViewStack x="8" y="31" id="viewstack1" width="1179" height="308">
+	<s:NavigatorContent label="All Employees" width="100%" height="100%">
+	<mx:DataGrid x="10" y="10" width="100%" height="265" contentBackgroundColor="#201818" chromeColor="#868181" color="#010000" id="employeePerspectiveDG">
+	<mx:columns>
+			<mx:DataGridColumn headerText="Employee Name" dataField="employeeName" />
+			<mx:DataGridColumn headerText="Report Name" dataField="reportName" />
+			<mx:DataGridColumn headerText="Report Description" dataField="reportDescrip" />
+	</mx:columns>
+	</mx:DataGrid>
+	</s:NavigatorContent>
+				
+	<s:NavigatorContent label="Selected Employees" width="100%" height="100%">
+	<mx:DataGrid x="10" y="30" width="100%" height="265" contentBackgroundColor="#201818" chromeColor="#868181" color="#000000" id="employeePerspectiveDG2">
+	<mx:columns>
+			<mx:DataGridColumn headerText="Report Name" dataField="reportName"/>
+			<mx:DataGridColumn headerText="Assigned Date" dataField="dateCreated"/>
+			</mx:columns>
+			</mx:DataGrid>
+		<s:Label x="15" y="5" text="Available Employees:" width="155" fontWeight="bold" fontSize="13" color="#DAD2D2"/>
+		<s:DropDownList x="165" y="0" width="164" prompt="Select Employee" id="employeeComboBox" toolTip="Select employee to see reports assigned to them." dataProvider="{activeEmployeeListDP}" labelField="employeeName" change="populateEmployeePerspectiveDG();"></s:DropDownList>
+	</s:NavigatorContent>
+	</mx:ViewStack>
+	<s:ButtonBar x="8" y="0" dataProvider="{viewstack1}"/>
+	<s:Button x="249" y="0" label="+ New Assignment" id="newAssignBtn" enabled="true" click="newAssignment();"/>
+	<s:Button x="386" y="0" label="- Remove Assignment" id="removeAssignBtn" enabled="true" click="removeAssignmentWindowFunc();"/>
+	<s:Button x="542" y="0" label="Refresh Data" click="populateComponents();"/>
+	</s:NavigatorContent>
+		
+		<s:NavigatorContent label="Report Perspective" width="100%" height="100%" backgroundColor="#0F68A6" >
+		<mx:MenuBar y="-8" chromeColor="#A39797" width="100%" height="34" x="0"></mx:MenuBar>
+		<s:Button x="542" y="0" label="Refresh Data" click="populateComponents();" id="btn_Refresh2"/>
+		<s:ButtonBar x="8" y="0" dataProvider="{reportStack}"/>
+		<mx:ViewStack x="8" y="31" id="reportStack" width="1190" height="305">		
+			<s:NavigatorContent label="All Reports" width="100%" height="100%">
+				<mx:DataGrid x="10" y="10" width="100%" height="265" contentBackgroundColor="#201818" chromeColor="#868181" color="#000000" id="reportingPerspectiveDG">
+				<mx:columns>
+					<mx:DataGridColumn headerText="Report Name" dataField="reportName"/>
+					<mx:DataGridColumn headerText="Employee Name" dataField="employeeName"/>
+					<mx:DataGridColumn headerText="Assigned Date" dataField="dateCreated"/>
+					</mx:columns>
+					</mx:DataGrid>
+			</s:NavigatorContent>
+			<s:NavigatorContent label="Report By Employee" width="100%" height="100%">
+				<mx:DataGrid x="10" y="30" width="100%" height="265" contentBackgroundColor="#201818" chromeColor="#868181" color="#010000"  id="reportingPerspectiveDG2" dataProvider="{assignedEmployeesDP}">
+				<mx:columns>
+					<mx:DataGridColumn headerText="Employees Assigned" dataField="employeeName"/>
+					<mx:DataGridColumn headerText="Assigned Date" dataField="dateCreated"/>
+					</mx:columns>
+					</mx:DataGrid>
+				<s:DropDownList x="145" y="0" width="164" prompt="Select Report" id="selectedReportComboBox" labelField="reportName" dataProvider="{reportsCurrentlyAssignedComboDP}" change="displayAssignedEmployees();" enabled="true"></s:DropDownList>
+				<s:Label x="15" y="5" text="Available Reports:" width="125" fontWeight="bold" fontSize="13" color="#DAD2D2"/>
+			</s:NavigatorContent>
+		</mx:ViewStack>
+		<s:Button x="249" y="0" label="+ New Assignment" click="newAssignment();"/>
+		<s:Button x="386" y="0" label="- Remove Assignment" click="removeAssignmentWindowFunc();"/>
+		</s:NavigatorContent>
+		
+		<s:NavigatorContent label="Report Roster" width="100%" height="100%" backgroundColor="#0F68A6" id="reportComboBox">
+			<s:Panel width="271" height="100%" y="0" right="0" title="Current Report Roster" chromeColor="#817A7A" backgroundColor="#8BB5C0">
+			<s:List contentBackgroundColor="#8BB5C0" width="100%" height="347" id="reportRoster" dataProvider="{reportsListDP}" enabled="true" labelField="Report_Name"></s:List>
+			<s:Button label="Refresh" x="4" bottom="0"/>
+			</s:Panel>
+			<s:Panel x="10" y="40" width="464" height="322" cornerRadius="10" title="Create New Report">
+				<s:Button x="10" y="249" label="Submit" click="addNewReport();"/>
+				<s:Button x="89" y="249" label="Reset Form"/>
+				<mx:Form width="100%" height="241" backgroundColor="#6F6565">
+				<mx:FormItem label="Report Name">
+				<s:TextInput id="fmReportName"/>
+				</mx:FormItem>
+				<mx:FormItem label="Category">
+				<s:TextInput id="fmReportCategory"/>
+				</mx:FormItem>
+				<mx:FormItem label="Report Description" width="420" height="126">
+				<s:TextArea height="123" width="295" id="fmReportDescrip"/>
+				</mx:FormItem>
+				</mx:Form>
+			</s:Panel>
+		</s:NavigatorContent>
+	</mx:TabNavigator>
+	<mx:MenuBar width="100%" height="30" x="0" y="-1"></mx:MenuBar>
+	<s:Label y="11" text="Reporting Assignment" x="10" width="268" fontWeight="bold" fontSize="12"/>
+</s:Application>
