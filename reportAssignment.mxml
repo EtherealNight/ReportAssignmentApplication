@@ -42,7 +42,7 @@
 			}
 			
 			
-			//function to call assignment creation window.
+			//function to call assignment deletion window.
 			private function removeAssignmentWindowFunc():void{
 				//call assignment removal window
 				var newAssignmentRemovalWindow:assignmentDelete = PopUpManager.createPopUp(this, assignmentDelete, true) as assignmentDelete;
@@ -271,5 +271,5 @@
 		</s:NavigatorContent>
 	</mx:TabNavigator>
 	<mx:MenuBar width="100%" height="30" x="0" y="-1"></mx:MenuBar>
-	<s:Label y="11" text="Reporting Assignment" x="10" width="268" fontWeight="bold" fontSize="12"/>
+	<s:Label y="11" text="First Title Reporting Assignment" x="10" width="268" fontWeight="bold" fontSize="12"/>
 </s:Application>
